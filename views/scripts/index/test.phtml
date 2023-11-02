@@ -1,0 +1,561 @@
+<!--<script language="javascript" type="text/javascript" src="/scripts/excanvas.js"></script>-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<!--<link rel="stylesheet" type="text/css" href="/scripts/extjs/resources/css/ext-all.css" />
+<script type="text/javascript" src="/scripts/extjs/adapter/jquery/ext-jquery-adapter.js"></script>
+<script type="text/javascript" src="/scripts/extjs/ext-all.js"></script>
+<script type="text/javascript" src="/scripts/extjs/src/locale/ext-lang-ru.js"></script>-->
+
+<meta name="http-equiv" content="Content-type: text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="/scripts/extjs5/build/packages/ext-theme-neptune/build/resources/ext-theme-neptune-all.css" />
+<script type="text/javascript" src="/scripts/extjs5/build/ext.js"></script>
+<script type="text/javascript" src="/scripts/extjs5/build/ext-all.js"></script>
+<script type="text/javascript" src="/scripts/extjs5/build/packages/ext-theme-neptune/build/ext-theme-neptune.js"></script>
+
+<!--<script type="text/javascript" src="/scripts/test.js"></script>-->
+
+<body>
+    
+</body>
+
+<script> 
+//var store = Ext.create('Ext.data.Store', {
+var storeUsers = new Ext.data.JsonStore({
+    proxy: {
+        type: 'ajax',
+        url: '/index/get-data',
+        reader: {
+            type: 'json',
+            rootProperty: 'dataa'
+        }
+    },
+    fields:[
+        {name : 'first_name'},
+        {name : 'second_name'},
+        {name : 'surname'},
+        {name : 'email'},
+        {name : 'phone'},
+        {name : 'birthday'},
+        {name : 'education'},
+        {name : 'level'},
+        {name : 'gender'},
+        {name : 'nationality'},
+        {name : 'place'},
+        {name : 'passport_type'},
+        {name : 'document_series'},
+        {name : 'passport_number'},
+        {name : 'when_issued'},
+        {name : 'who_issued'},
+        {name : 'place_issued'},
+        {name : 'snils'},
+        {name : 'lack_snils'},
+        {name : 'home_phone_number'},
+        {name : 'phone_number'},
+        {name : 'fio'}
+    ],
+    autoLoad: true
+ });
+
+var storeEmployees = new Ext.data.JsonStore({
+    proxy: {
+        type: 'ajax',
+        url: '/index/get-employee-data',
+        reader: {
+            type: 'json',
+            rootProperty: 'data'
+        }
+    },
+    fields:[
+        {name : 'e_id'},
+        {name : 'name'}
+
+    ],
+    autoLoad: true
+ });
+
+
+
+var gridPanel = Ext.create('Ext.grid.Panel',{
+    title: 'Пользователи',
+    store: storeUsers,
+    
+    tbar: [
+    {
+        text: 'Добавить',
+        handler: function() 
+        {
+            Window.show();
+            storeUsers.reload();
+        }
+    }, 
+    {
+        text: 'Удалить',
+        handler: function()
+        {   
+            //console.log(gridPanel.getSelection());
+            if (gridPanel.getSelection().length == 0) 
+            {
+                 Ext.Msg.alert('','Выберите строку для удаления');   
+            }
+                
+            else 
+            {
+                Ext.Msg.show({
+                title:'',
+                message: 'Вы точно хотите удалить выбранную строку?',
+                buttons: Ext.Msg.YESNO,
+                icon: Ext.Msg.QUESTION,
+                fn: function(btn) {
+                if (btn === 'yes') {
+                    Ext.Ajax.request({
+                    url: '/index/delete-user-data',
+                    params: {
+                    id: gridPanel.getSelection()[0].get('id')
+                    },
+                    success: function(){}
+                    });
+                    storeUsers.reload();
+                }
+                } 
+                });
+                
+            }
+        }
+         
+    },
+    '->', 
+      {
+        text: 'Распределение',
+        handler: function() 
+        {
+            WindowDist.show();
+ 
+        }
+    }
+    ], 
+    columns: [
+        { 
+            width: 300,
+            header: 'Имя',
+            dataIndex: 'first_name' 
+        },
+        {
+           width: 300,
+           header: 'Отчество',
+           dataIndex: 'second_name'  
+        },
+        {
+           width: 300,
+           header: 'Фамилия',
+           dataIndex: 'surname' 
+        },
+        {
+           width: 300,
+           header: 'Почта',
+           dataIndex: 'email' 
+        },
+        {
+           width: 300,
+           header: 'Телефон',
+           dataIndex: 'phone' 
+        },
+        {
+           width: 300,
+           header: 'ФИО сотрудникa',
+           dataIndex: 'fio'
+        },
+        {
+            hidden: true,
+            header: 'Id',
+            dataIndex: 'id'  
+        }
+    ],
+    
+  
+    width: 1800,
+    renderTo: Ext.getBody()
+});
+
+var Form = new Ext.FormPanel({
+    id: 'form1',
+    title: 'Общая информация',
+    bodyPadding: 5,
+    height: 1000,
+    width: 600,
+    //url: 'save-form.php',
+    //layout: 'anchor',
+    defaults: {
+        anchor: '75%'
+    },
+    defaultType: 'textfield',
+    items: [
+        {
+            fieldLabel: 'Имя',
+            name: 'first_name',
+            id: 'first_nameId'
+        },
+        {
+            fieldLabel: 'Отчество',
+            name: 'second_name',
+            id: 'second_nameId'
+        },
+        {
+            fieldLabel: 'Фамилия',
+            name: 'surname',
+            id: 'surnameId'
+        },
+        {
+            fieldLabel: 'Почта',
+            name: 'email',
+            id: 'emailId'
+        },
+        {
+            xtype: 'datefield',
+            fieldLabel: '<label for="date" data-field="date">Дата рождения</label>',
+            name: 'birthday',
+            id: 'birthdayId'
+        },
+        {
+            fieldLabel: 'Уровень образования',
+            name: 'education',
+            id: 'educationId',
+            emptyText: 'Выберите',
+            xtype:'combo',
+            queryMode:'local',
+            store: Ext.create('Ext.data.Store', {
+                fields: ['value','level'],
+                data: [
+                   {
+                   "level": "Бакалавриат",
+                   "value": 0
+                   },
+                   {
+                   "level": "Специалитет",
+                   "value": 1
+                   },
+                   {
+                   "level": "Магистратура",
+                   "value": 2
+                   }
+                ]
+            }),
+            displayField:'level',
+            valueField: 'value',
+            autoSelect:true,
+            forceSelection:true
+        },
+        {
+            fieldLabel: 'Получаю образование данного уровня',
+            name: 'level',
+            id: 'levelId',
+            emptyText: 'Выберите',
+            xtype:'combo',
+            queryMode:'local',   
+            store: Ext.create('Ext.data.Store', {
+                fields: ['value','time'],
+                data: [
+                   {
+                   "time": "Впервые",
+                   "value": 0
+                   },
+                   {
+                   "time": "Нет",
+                   "value": 1
+                   }
+             
+                ]
+            }),
+            displayField:'time',
+            valueField: 'value',
+            autoSelect:true,
+            forceSelection:true
+        },
+        {
+            fieldLabel: 'Пол',
+            name: 'gender',
+            id: 'genderId',
+            emptyText: 'Выберите',
+            xtype:'combo',
+            queryMode:'local',
+            store: Ext.create('Ext.data.Store', {
+                fields: ['value','gender'],
+                data: [
+                   {
+                   "gender": "Мужской",
+                   "value": 0
+                   },
+                   {
+                   "gender": "Женский",
+                   "value": 1
+                   }
+             
+                ]
+            }),
+            displayField:'gender',
+            valueField: 'value',
+            autoSelect:true,
+            forceSelection:true
+        },
+        {
+            fieldLabel: 'Гражданство',
+            name: 'nationality',
+            id: 'nationalityId',
+            emptyText: 'Выберите',
+            xtype:'combo',
+            queryMode:'local',
+            store: Ext.create('Ext.data.Store', {
+                fields: ['value','national'],
+                data: [
+                   {
+                   "national": "Россия",
+                   "value": 0
+                   },
+                   {
+                   "national": "Другое",
+                   "value": 1
+                   }
+             
+                ]
+            }),
+            displayField:'national',
+            valueField: 'value',
+            autoSelect:true,
+            forceSelection:true
+        },
+        {
+            fieldLabel: 'Место рождения',
+            name: 'place',
+            id: 'placeId'
+        },
+        {
+            fieldLabel: 'Тип паспорта',
+            name: 'passport_type',
+            id: 'passport_typeId',
+            emptyText: 'Выберите',
+            xtype:'combo',
+            queryMode:'local',
+            store: Ext.create('Ext.data.Store', {
+                fields: ['value','passport'],
+                data: [
+                   {
+                   "passport": "Паспорт гражданина Российской Федерации",
+                   "value": 0
+                   },
+                   {
+                   "passport": "Паспорт гражданина другого государства",
+                   "value": 1
+                   }
+             
+                ]
+            }),
+            displayField:'passport',
+            valueField: 'value',
+            autoSelect:true,
+            forceSelection:true
+        },
+        {
+            fieldLabel: 'Серия документа',
+            name: 'document_series',
+            id: 'document_seriesId'
+        },
+        {
+            fieldLabel: 'Номер паспорта',
+            name: 'passport_number',
+            id: 'passport_numberId'
+        },
+        {
+            fieldLabel: 'Когда выдан',
+            name: 'when_issued',
+            id: 'when_issuedId'
+        },
+        {
+            fieldLabel: 'Кем выдан',
+            name: 'who_issued',
+            id: 'who_issuedId'
+        },
+        {
+            fieldLabel: 'Место выдачи',
+            name: 'place_issued',
+            id: 'place_issuedId'
+        },
+        {
+            fieldLabel: 'СНИЛС',
+            name: 'snils',
+            id: 'snilsId'
+        },
+        {
+            fieldLabel: 'Причина отсутствия СНИЛС',
+            name: 'lack_snils',
+            id: 'lack_snilsId',
+            emptyText: 'Выберите',
+            xtype:'combo',
+            queryMode:'local',
+            store: Ext.create('Ext.data.Store', {
+                fields: ['value','cause'],
+                data: [
+                   {
+                   "cause": "Гражданин иностранного государства",
+                   "value": 0
+                   },
+                   {
+                   "cause": "Другое",
+                   "value": 1
+                   }
+             
+                ]
+            }),
+            displayField:'cause',
+            valueField: 'value',
+            autoSelect:true,
+            forceSelection:true
+        },
+        {
+            fieldLabel: 'Домашний телефон',
+            name: 'home_phone_number',
+            id: 'home_phone_numberId'
+        },
+        {
+            fieldLabel: 'Мобильный телефон',
+            name: 'phone_number',
+            id: 'phone_numberId'
+        }
+    ],
+
+    // buttons
+    buttons: [ 
+    {
+        text: 'Сохранить',
+        handler: function() {
+            var form = this.up('form').getForm();
+            var values = form.getValues();
+            Ext.Ajax.request({
+            url: '/index/insert-user-data',
+            params: {
+               first_name:  values['first_name'],
+               second_name:  values['second_name'],
+               surname:  values['surname'],
+               email: values['email'],
+               phone: values['phone'],
+               birthday: values['birthday'],
+               education: values ['education'],
+               level: values['level'],
+               gender: values['gender'],
+               nationality: values['nationality'],
+               place: values['place'],
+               passport_type: values['passport_type'],
+               document_series: values['document_series'],
+               passport_number: values['passport_number'],
+               when_issued: values['when_issued'],
+               who_issued: values['second_name'],
+               place_issued: values['who_issued'],
+               snils: values['snils'],
+               lack_snils: values['lack_snils'],
+               home_phone_number: values['home_phone_number'],
+               phone_number: values['phone_number']
+            },
+            
+            
+            success: function(){}
+            });
+            Window.hide();
+            this.up('form').getForm().reset();
+            storeUsers.reload();      
+        },
+       
+     },
+     {
+          text: 'Отмена',
+        handler: function(){
+            Window.hide();
+            this.up('form').getForm().reset();
+        }
+     }
+ ]
+});
+
+
+var ComboDist = Ext.create('Ext.form.ComboBox', {
+    id: 'combo_dist_user',
+    name: 'combo_dist',
+    fieldLabel: 'Сотрудник',
+    emptyText: 'Выберите сотрудника',
+    store: storeEmployees,
+    displayField: 'name',
+    valueField: 'e_id'
+});
+
+var FormDist = Ext.create('Ext.form.Panel', {
+    width: 350,
+    height: 300,
+    title: 'Распределение',
+    bodyPadding: 5,
+    defaultType: 'textfield',
+    id: 'FormDist',
+    items: [ 
+        {
+            xtype: 'textfield',
+            fieldLabel: 'Количество пользователей',
+            name: 'count',
+            id: 'countId',
+            //allowBlank: false
+        },
+        ComboDist
+    ],
+    buttons: 
+    [ 
+        {
+            text: 'Сохранить',
+            handler: function() {
+                //var form = this.up('FormDist').getForm();
+                var form = Ext.getCmp('FormDist').getForm();
+                var values = form.getValues();
+                //console.log();
+                Ext.Ajax.request({
+                url: '/index/dist-data',
+                params: {
+                    count: values['count'],
+                    emp_id: values['combo_dist'],
+
+                },
+            success: function(){}
+            });
+            storeUsers.reload();
+            WindowDist.hide();
+            Ext.getCmp('FormDist').getForm().reset();
+            }
+        },
+         {
+          text: 'Отмена',
+        handler: function(){
+            WindowDist.hide();
+            Ext.getCmp('FormDist').getForm().reset();
+        }
+     }
+    ]
+    
+});
+
+var Window = Ext.create('Ext.window.Window', {
+    title: '',
+    height: 900,
+    width: 400,
+    layout: 'fit',
+    items: [Form],
+    //closable:true,
+    closeAction:'hide'       
+}) ;
+
+var WindowDist = Ext.create('Ext.window.Window', {
+    title: '',
+    height: 300,
+    width: 500,
+    layout: 'fit',
+    items: [FormDist],
+    //closable:true,
+    closeAction:'hide'       
+}) ;
+
+
+
+
+</script>
+
